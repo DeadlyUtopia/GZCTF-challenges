@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>多服务 API KEY 验证</title>
+</head>
+
+<body>
+    <h1>Quake API KEY 验证</h1>
+    <form id="quake-form">
+        <input type="text" id="quake-key" placeholder="请输入 Quake API KEY" required />
+        <button type="submit">验证 Quake KEY</button>
+    </form>
+    <pre id="quake-result" style="white-space: pre-wrap; margin-top: 10px;"></pre>
+
+    <hr />
+
+    <h1>SiliconFlow API KEY 验证</h1>
+    <form id="silicon-form">
+        <input type="text" id="silicon-key" placeholder="请输入 SiliconFlow API KEY" required />
+        <button type="submit">验证 SiliconFlow KEY</button>
+    </form>
+    <pre id="silicon-result" style="white-space: pre-wrap; margin-top: 10px;"></pre>
+
+    <script>
+        async function postJson(url, body) {
+            const resp = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            return resp.json();
+        }
+
+        document.getElementById("quake-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const key = document.getElementById("quake-key").value;
+            const resultDiv = document.getElementById("quake-result");
+            resultDiv.textContent = "请求中...";
+            try {
+                const data = await postJson("/quake-verify", { api_key: key });
+                if (data.success) {
+                    const u = data.user_info;
+                    resultDiv.textContent = `✅ Quake验证成功\nFLAG: ${data.flag}\n用户名: ${u.username}\n邮箱: ${u.email}\n用户ID: ${u.id}\n积分: ${u.credit}\n状态: ${u.baned ? "封禁" : "正常"}\n角色: ${u.role.map(r => r.fullname).join(", ")}`;
+                } else {
+                    resultDiv.textContent = `❌ Quake验证失败：${data.message}`;
+                }
+            } catch (err) {
+                resultDiv.textContent = `请求失败：${err.message}`;
+            }
+        });
+
+        document.getElementById("silicon-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const key = document.getElementById("silicon-key").value;
+            const resultDiv = document.getElementById("silicon-result");
+            resultDiv.textContent = "请求中...";
+            try {
+                const data = await postJson("/silicon-verify", { api_key: key });
+                if (data.success) {
+                    const u = data.user_info;
+                    resultDiv.textContent = `✅ SiliconFlow验证成功\nFLAG（后半段）: ${data.flag}\n用户名: ${u.name}\n邮箱: ${u.email}\n用户ID: ${u.id}\n余额: ${u.balance}\n状态: ${u.status}`;
+                } else {
+                    resultDiv.textContent = `❌ SiliconFlow验证失败：${data.message}`;
+                }
+            } catch (err) {
+                resultDiv.textContent = `请求失败：${err.message}`;
+            }
+        });
+    </script>
+</body>
+
+</html>

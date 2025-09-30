@@ -1,0 +1,14 @@
+FROM python:3.10
+
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN chmod +x /app/flag.sh
+
+# ENTRYPOINT 先执行写 flag，再启动服务
+ENTRYPOINT ["/bin/sh", "-c", "/app/flag.sh && python /app/app.py"]
+
+EXPOSE 5000
