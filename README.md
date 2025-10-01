@@ -4,7 +4,7 @@
 	Install Docker and start the service.
 
 2. 进入相应题目文件夹下的 `docker` 文件夹下（例如： `./example/docker/` ），输入以下代码构建题目镜像  
-	Enter the docker folder under the corresponding problem folder (for example: ./example/docker/), and enter the following code to build the problem image:
+	Enter the docker folder under the corresponding challenge folder (for example: ./example/docker/), and enter the following code to build the challenge image:
 
    ```bash
    docker build -t {name}:{tag} .
@@ -13,7 +13,7 @@
    ```
 
 3. 参见 **[GZCTF](https://github.com/GZTimeWalker/GZCTF)** 的使用，开启题目  
-	Refer to the usage of GZCTF to start the problem.
+	Refer to the usage of GZCTF to start the challenge.
 
 ### Notice
 
