@@ -1,0 +1,23 @@
+# 使用已包含procps和Python的官方镜像
+FROM python:3.9-slim-bullseye
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制依赖文件并安装Python依赖（仅用pip，无系统级安装）
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# 复制应用代码和资源
+COPY app.py .
+COPY start.sh .
+COPY homo.jpg .
+
+# 给启动脚本添加可执行权限
+RUN chmod +x /app/start.sh
+
+# 暴露端口
+EXPOSE 5000
+
+# 设置启动命令
+CMD ["/app/start.sh"]
