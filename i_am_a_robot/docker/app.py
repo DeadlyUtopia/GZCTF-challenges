@@ -11,7 +11,7 @@ app.static_folder = 'static'
 app.debug = Fales
 
 # 核心配置
-FLAG = os.environ.get("GZCTF_FLAG", "flag{your_flag_here}")
+FLAG = os.environ.get("GZCTF_FLAG", "flag{If you see me, it means the FLAG value was not passed correctly.}")
 SUCCESS_IMAGES = ["static/images/GtKwbGnbMAIjOW4.jpg", "static/images/Nano_is_not_robot.jpg"]
 
 # 第一关配置
