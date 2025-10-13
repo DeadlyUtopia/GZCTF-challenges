@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>验证 - 时间虫</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h2>步骤 Ⅲ</h2>
+
+        {% if error %}
+        <div class="error-box">{{ error }}</div>
+        {% endif %}
+
+        <p class="question">
+            {{ scenario_name }} | Asia/Shanghai | 从 {{ start_date_str }} 开始，经过 {{ add_days }} 天后的日期是？
+        </p>
+
+        <form class="answer-form" method="POST" action="{{ url_for('stage3') }}">
+            <input type="text" name="answer" placeholder="请输入日期（YYYY-MM-DD，例如：1145-14-19）" required>
+            <button type="submit" class="btn">提交答案</button>
+        </form>
+    </div>
+</body>
+
+</html>

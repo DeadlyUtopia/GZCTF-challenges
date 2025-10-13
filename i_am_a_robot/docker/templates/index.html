@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🤖I am a robot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <!-- 人机验证弹窗 -->
+    <div class="verification-modal" id="verification-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>人机验证</h3>
+            </div>
+            <div class="modal-body">
+                <!-- 显示人类检测提示 -->
+                {% if alert_message %}
+                <div class="error-box">
+                    {{ alert_message }}
+                </div>
+                {% else %}
+                <p class="modal-message">⚠️我们怀疑你是人类，请通过机器人验证</p>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('index') }}">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="robot-check" name="robot" required>
+                        <span class="checkbox-label">I am a robot.</span>
+                    </label>
+                    <button type="submit" class="btn">开始</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

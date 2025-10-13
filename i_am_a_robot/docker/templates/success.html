@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🤖 欢迎来到 塞伯斯坦</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h3>✅验证通过</h3>
+        <div class="flag">{{ flag }}</div>
+        {% if image_path %}
+        <div class="success-image">
+            <img src="{{ url_for('static', filename=image_path.split('static/')[1]) }}" alt="成功验证图片">
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

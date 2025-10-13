@@ -1,0 +1,146 @@
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* 弹窗样式 */
+.verification-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(240, 240, 240, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 400px;
+    background-color: white;
+    padding: 25px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.modal-content p {
+    margin: 20px 0;
+    color: #555;
+}
+
+/* 复选框样式 */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    cursor: pointer;
+}
+
+.checkbox-container input {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+}
+
+/* 按钮样式 */
+.btn {
+    padding: 10px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn:hover {
+    background-color: #1557b0;
+}
+
+/* 错误提示 */
+.error-box {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+/* 关卡页面样式 */
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.question {
+    margin: 25px 0;
+    font-size: 18px;
+}
+
+.answer-form {
+    margin: 25px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.answer-form input {
+    padding: 8px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* 弹窗中的按钮保持样式 */
+.modal-content .btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* 通关页面专用样式 */
+.container h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.flag {
+    background-color: #f5f5f5;
+    color: #1a73e8;
+    font-family: "Courier New", monospace;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+    text-align: center;
+    word-break: break-all;
+    font-size: 16px;
+}
+
+.success-image {
+    margin: 30px auto 0;
+    text-align: center;
+}
+
+.success-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

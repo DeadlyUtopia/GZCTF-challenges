@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>验证 - 数值溢出</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h3>步骤 Ⅱ</h3>
+        {% if error %}
+        <div class="error-box">{{ error }}</div>
+        {% endif %}
+        <p class="question"> int32_t | {{ a }} {{ op }} {{ b }} = ? </p>
+        <form method="POST" class="answer-form">
+            <input type="text" name="answer" required>
+            <button type="submit" class="btn">提交</button>
+        </form>
+    </div>
+</body>
+
+</html>
