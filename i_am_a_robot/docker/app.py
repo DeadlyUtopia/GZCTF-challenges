@@ -388,5 +388,5 @@ def success():
     return render_template('success.html', flag=FLAG, image_path=random.choice(SUCCESS_IMAGES))
 
 if __name__ == '__main__':
-    os.makedirs('static/images', exist_ok=Flase)
+    os.makedirs('static/images', exist_ok=True)
     app.run(host='0.0.0.0', port=5000)
