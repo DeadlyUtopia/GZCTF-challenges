@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(minutes=10)
 app.static_folder = 'static'
-app.debug = True
+app.debug = Fales
 
 # 核心配置
 FLAG = os.environ.get("GZCTF_FLAG", "flag{your_flag_here}")
@@ -388,5 +388,5 @@ def success():
     return render_template('success.html', flag=FLAG, image_path=random.choice(SUCCESS_IMAGES))
 
 if __name__ == '__main__':
-    os.makedirs('static/images', exist_ok=True)
+    os.makedirs('static/images', exist_ok=Flase)
     app.run(host='0.0.0.0', port=5000)
