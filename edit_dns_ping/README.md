@@ -3,7 +3,7 @@
 ```
 ssh root@{IP} -p {PORT}
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-root@10.52.84.140's password:
+root@{IP}'s password:
 Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 6.8.0-51-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -49,7 +49,8 @@ flag{GZCTF_dynamic_flag_test}
 root@d78e7ad41dc5:/#
 ```
 
-- `ssh` 登录
+- `ssh` 登录（`root/root`）
 - 修改 `/etc/resolv.conf` 添加 `DNS` （例如： `nameserver 8.8.8.8`）
 - `ping example.com`
+
 - `cat /flag`
