@@ -65,6 +65,9 @@ int main() {
 
 ![时间虫-Liunx_32](assets/image-20251013163646620.png)
 
+> [!NOTE]
+>步骤Ⅲ给出的时间为UTC时区，计算结果要求为UTC+8时区，答案误差为±1
+
 使用以下代码计算结果
 
 ```python
@@ -258,5 +261,6 @@ PS C:\Users\XXXX>
 JavaScript 超出最大时间范围会返回 `Invalid Date` ，即正确答案
 
 ## FLAG
+
 
 ![FLAG](assets/屏幕截图_13-10-2025_164247_192.168.128.129.jpeg)
