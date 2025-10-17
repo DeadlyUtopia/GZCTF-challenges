@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(minutes=10)
 app.static_folder = 'static'
-app.debug = Fales
+app.debug = False
 
 # 核心配置
 FLAG = os.environ.get("GZCTF_FLAG", "flag{If you see me, it means the FLAG value was not passed correctly.}")
@@ -36,7 +36,7 @@ OPERATIONS = [
 ]
 INT_CANDIDATES = [1800000000, 1900000000, 2000000000, 2100000000]
 
-# 第三关配置
+# 第三关配置（不使用）
 SCENARIOS = {
     "linux32": {
         "name": "Linux 32位",
@@ -76,56 +76,46 @@ def is_human_answer(stage, user_input, expected_human_val, correct_answer=None, 
             user_val = int(user_input.replace('(', '').replace(')', ''))
             return user_val == expected_human_val
         
-        elif stage == 3:
+        elif stage == 3:  # 保留但不使用
             user_input_clean = user_input.strip().lower()
             expected_human_clean = expected_human_val.strip().lower()
             
-            # JS模式人类答案检测（核心修复）
             if scenario_key == "javascript":
-                # 接受格式错误的情况（人类常犯）
                 if not user_input_clean or '-' not in user_input_clean:
                     return False
                     
-                # 分割日期部分
                 user_parts = user_input_clean.split('-')
                 expected_parts = expected_human_clean.split('-')
                 
-                # 检查基本格式
                 if len(user_parts) != 3 or len(expected_parts) != 3:
                     return False
                     
                 try:
-                    # 年份检测：允许±2年误差（人类估算误差较大）
                     user_year = int(user_parts[0])
                     expected_year = int(expected_parts[0])
                     year_diff = abs(user_year - expected_year)
                     year_match = year_diff <= 2
                     
-                    # 月份检测：允许±1月误差
                     user_month = int(user_parts[1])
                     expected_month = int(expected_parts[1])
                     month_diff = abs(user_month - expected_month)
-                    month_match = month_diff <= 1 or month_diff >= 11  # 处理12月到1月的跨年情况
+                    month_match = month_diff <= 1 or month_diff >= 11
                     
-                    # 日期检测：允许±3天误差
                     user_day = int(user_parts[2])
                     expected_day = int(expected_parts[2])
                     day_diff = abs(user_day - expected_day)
                     day_match = day_diff <= 3
                     
-                    # 全部条件满足则判定为人类答案
                     return year_match and month_match and day_match
                     
                 except (ValueError, TypeError):
-                    # 格式转换失败（非数字）
                     return False
             
-            # Linux模式：严格匹配
             return user_input_clean == expected_human_clean
     except:
         return False
 
-# 安全生成超范围日期字符串
+# 安全生成超范围日期字符串（保留但不使用）
 def generate_future_date_str(total_seconds):
     base_year = 9999
     base_month = 12
@@ -150,7 +140,7 @@ def generate_future_date_str(total_seconds):
     
     return f"{base_year + extra_years}-{month:02d}-{day:02d}"
 
-# 第三关日期生成（更精确的人类答案计算）
+# 第三关日期生成（保留但不使用）
 def generate_safe_date(scenario_key):
     scenario = SCENARIOS[scenario_key]
     timezone = pytz.timezone(scenario["timezone_name"])
@@ -180,7 +170,7 @@ def generate_safe_date(scenario_key):
         start_ts = max(1, min(start_ts, scenario["max_ts"] - 86400))
         start_date_str = start_date.strftime("%Y-%m-%d")
 
-    else:  # JavaScript模式
+    else:
         offset_days = random.randint(*scenario["start_ts_offset_range"])
         start_ts = scenario["max_ts"] - offset_days * 86400 * scenario["multiplier"]
         start_ts = max(1, start_ts)
@@ -188,7 +178,6 @@ def generate_safe_date(scenario_key):
         total_seconds = start_ts / scenario["multiplier"]
         start_date_str = generate_future_date_str(total_seconds)
 
-    # 计算添加天数
     seconds_per_day = 86400
     remaining_ts = scenario["max_ts"] - start_ts
     min_add_days = (remaining_ts // (seconds_per_day * scenario["multiplier"])) + 1
@@ -196,7 +185,6 @@ def generate_safe_date(scenario_key):
     max_add_days = max(scenario["max_add_days"], min_add_days + 100)
     add_days = random.randint(min_add_days, max_add_days)
 
-    # 计算人类答案和正确答案
     human_date_str = ""
     correct_date_str = ""
 
@@ -211,42 +199,34 @@ def generate_safe_date(scenario_key):
         correct_date = epoch + datetime.timedelta(seconds=total_ts / scenario["multiplier"])
         correct_date_str = correct_date.strftime("%Y-%m-%d")
 
-    else:  # JavaScript模式：更精确的人类答案生成
-        # 解析起始日期
+    else:
         start_parts = start_date_str.split('-')
         start_year = int(start_parts[0])
         start_month = int(start_parts[1])
         start_day = int(start_parts[2])
         
-        # 人类计算方式：先算年份
         years_add = add_days // 365
         days_remaining = add_days % 365
         
-        # 人类计算方式：简单处理月份进位
         current_month = start_month
         current_day = start_day
         
-        # 模拟人类估算月份（每月按30天算）
         months_add = days_remaining // 30
         days_remaining_after_months = days_remaining % 30
         
-        # 处理月份进位
         current_month += months_add
         current_day += days_remaining_after_months
         
-        # 处理日期溢出（人类简单处理）
         if current_day > 31:
             current_day -= 31
             current_month += 1
             
-        # 处理月份溢出
         if current_month > 12:
             years_add += current_month // 12
             current_month = current_month % 12
             if current_month == 0:
                 current_month = 12
                 
-        # 生成人类预期答案
         human_year = start_year + years_add
         human_date_str = f"{human_year}-{current_month:02d}-{current_day:02d}"
         
@@ -327,58 +307,49 @@ def stage2():
         correct_answer = str(data.get('correct_answer', 0))
         
         if user_answer == correct_answer:
-            session['stage'] = 3
-            scenario_key = random.choice(list(SCENARIOS.keys()))
-            date_data = generate_safe_date(scenario_key)
-            
-            session['stage3_data'] = {
-                'scenario_key': scenario_key,
-                'scenario': SCENARIOS[scenario_key],
-                'start_date_str': date_data['start_date_str'],
-                'add_days': date_data['add_days'],
-                'human_date': date_data['human_date'],
-                'correct_date': date_data['correct_date']
-            }
-            return redirect(url_for('stage3'))
+            # 完成stage2后直接跳转到success
+            session['stage'] = 4
+            return redirect(url_for('success'))
         elif is_human_answer(2, user_answer, data['a'] + data['b'] if data['op_symbol'] == '+' else data['a'] * data['b']):
             session.clear()
             return redirect(url_for('index', human='true'))
         else:
             return render_template('stage2.html', a=data['a'], b=data['b'], op=data['op_symbol'], error="计算错误")
 
-@app.route('/stage3', methods=['GET', 'POST'])
-def stage3():
-    if 'stage' not in session or session['stage'] != 3 or 'stage3_data' not in session:
-        return redirect(url_for('index'))
-    
-    data = session['stage3_data']
-    
-    if request.method == 'GET':
-        return render_template(
-            'stage3.html',
-            scenario_name=data['scenario']['name'],
-            start_date_str=data['start_date_str'],
-            add_days=data['add_days'],
-            error=None
-        )
-    
-    else:
-        user_answer = request.form.get('answer', '').strip()
-        
-        if user_answer.lower() == data['correct_date'].lower():
-            session['stage'] = 4
-            return redirect(url_for('success'))
-        elif is_human_answer(3, user_answer, data['human_date'], scenario_key=data['scenario_key']):
-            session.clear()
-            return redirect(url_for('index', human='true'))
-        else:
-            return render_template(
-                'stage3.html',
-                scenario_name=data['scenario']['name'],
-                start_date_str=data['start_date_str'],
-                add_days=data['add_days'],
-                error="计算错误"
-            )
+# 注释掉stage3路由
+# @app.route('/stage3', methods=['GET', 'POST'])
+# def stage3():
+#     if 'stage' not in session or session['stage'] != 3 or 'stage3_data' not in session:
+#         return redirect(url_for('index'))
+#     
+#     data = session['stage3_data']
+#     
+#     if request.method == 'GET':
+#         return render_template(
+#             'stage3.html',
+#             scenario_name=data['scenario']['name'],
+#             start_date_str=data['start_date_str'],
+#             add_days=data['add_days'],
+#             error=None
+#         )
+#     
+#     else:
+#         user_answer = request.form.get('answer', '').strip()
+#         
+#         if user_answer.lower() == data['correct_date'].lower():
+#             session['stage'] = 4
+#             return redirect(url_for('success'))
+#         elif is_human_answer(3, user_answer, data['human_date'], scenario_key=data['scenario_key']):
+#             session.clear()
+#             return redirect(url_for('index', human='true'))
+#         else:
+#             return render_template(
+#                 'stage3.html',
+#                 scenario_name=data['scenario']['name'],
+#                 start_date_str=data['start_date_str'],
+#                 add_days=data['add_days'],
+#                 error="计算错误"
+#             )
 
 @app.route('/success')
 def success():
