@@ -1,0 +1,27 @@
+FROM nginx:1.21.6
+
+# 添加国内镜像源
+RUN echo "deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security/ bullseye-security main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib" >> /etc/apt/sources.list
+
+# 安装PHP 7.4
+RUN apt-get update && apt-get install -y \
+    php7.4-fpm \
+    php7.4 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制配置文件
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY php-fpm.conf /etc/php/7.4/fpm/php-fpm.conf
+COPY html /var/www/html
+
+# 复制并设置启动脚本
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+# 确保脚本可执行
+
+# 暴露端口
+EXPOSE 80
+
+CMD ["/entrypoint.sh"]
