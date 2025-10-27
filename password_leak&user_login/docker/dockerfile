@@ -1,0 +1,35 @@
+FROM node:lts-alpine
+WORKDIR /app
+
+RUN apk add --no-cache nginx apache2-utils python3 py3-pip git ca-certificates && \
+    wget -O /etc/ssl/certs/ca-certificates.crt https://curl.se/ca/cacert.pem && \
+    update-ca-certificates
+
+# 复制项目文件
+COPY generate_phone.py requirements.txt /app/
+COPY _config.yml /app/
+COPY source/ /app/source/
+COPY package.json /app/
+
+# 克隆官方主题
+RUN git clone https://github.com/next-theme/hexo-theme-next.git themes/next
+
+# 复制本地主题文件
+COPY themes/ /app/themes/
+
+RUN pip3 install -r requirements.txt --no-cache-dir \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    --trusted-host pypi.tuna.tsinghua.edu.cn \
+    --break-system-packages && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install --no-cache && \
+    rm -f /etc/nginx/conf.d/default.conf
+
+# 复制启动文件
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY inject_flag.sh /usr/local/bin/
+COPY admin/index.html.template /usr/share/nginx/html/admin/
+RUN chmod +x /usr/local/bin/inject_flag.sh
+
+EXPOSE 80
+CMD ["/usr/local/bin/inject_flag.sh"]
