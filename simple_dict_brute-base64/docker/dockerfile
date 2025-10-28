@@ -1,0 +1,19 @@
+FROM php:8.2-apache
+
+# 添加 Apache 配置，强制传递 Authorization 头给 PHP
+RUN echo 'SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1' > /etc/apache2/conf-available/auth-header.conf && \
+    # 启用该配置
+    a2enconf auth-header && \
+    # 确保 rewrite 模块启用
+    a2enmod rewrite
+
+# 复制项目文件
+COPY index.php /var/www/html/
+COPY passwords.txt /var/www/html/
+
+# 设置权限
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod 644 /var/www/html/*
+
+EXPOSE 80
+CMD ["apache2-foreground"]
