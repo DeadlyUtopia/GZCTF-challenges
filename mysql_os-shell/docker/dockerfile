@@ -3,7 +3,10 @@ FROM nudttan91/sqli_labs_gzctf:less02
 # 切换到root用户运行（容器内PHP也以root身份运行）
 USER root
 
-# 复制文件（固定名称）
+# RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+#     sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+# 复制文件
 COPY index.php /app/Less-2/index.php
 
 COPY flag.sh /flag.sh
@@ -19,4 +22,3 @@ RUN apt-get update && apt-get install -y gcc && \
     gcc /tmp/exec-wrapper.c -o /usr/local/bin/exec-wrapper && \
     chown root:root /usr/local/bin/exec-wrapper && chmod 4755 /usr/local/bin/exec-wrapper && \
     rm -rf /tmp/exec-wrapper.c && apt-get clean
-
