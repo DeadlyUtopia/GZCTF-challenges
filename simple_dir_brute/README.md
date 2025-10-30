@@ -6,7 +6,7 @@
 
 自动跳转 `IP:PORT/0/0/not-here.txt` 路径并显示 `where is flag?`
 
-这题是目录爆破*~~（范围 **1-100**）~~*
+这题是目录爆破 ~~*（范围 **1-100**）*~~
 
 使用 bp 抓个请求包先
 
@@ -37,5 +37,6 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/w
 Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
 ```
+
 
 爆破目录，然后得到 flag
