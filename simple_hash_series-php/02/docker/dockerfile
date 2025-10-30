@@ -1,0 +1,21 @@
+FROM php:8.2-apache
+
+WORKDIR /var/www/html
+
+# 复制模板文件
+COPY index.php /var/www/html/index.php
+COPY flag.php /var/www/html/flag.php
+
+# 编写启动脚本：
+# 1. 生成随机种子（32位整数，mt_srand()支持范围）
+# 2. 替换index.php中的__RAND_SEED__占位符
+# 3. 写入flag到flag.php
+# 4. 启动Apache
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'RAND_SEED=$RANDOM' >> /entrypoint.sh && \
+    echo 'sed -i "s/__RAND_SEED__/$RAND_SEED/g" /var/www/html/index.php' >> /entrypoint.sh && \
+    echo 'echo "<?php \$flag = getenv(\"GZCTF_FLAG\"); ?>" > /var/www/html/flag.php' >> /entrypoint.sh && \
+    echo 'exec apache2-foreground' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

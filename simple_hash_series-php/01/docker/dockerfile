@@ -1,0 +1,16 @@
+FROM php:8.2-apache
+
+# 设置工作目录为Apache默认站点目录
+WORKDIR /var/www/html
+
+# 复制题目文件（index.php和flag.php）到站点目录
+COPY index.php /var/www/html/index.php
+COPY flag.php /var/www/html/flag.php
+
+# 容器启动时从环境变量写入flag到flag.php
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'echo "<?php \$flag = getenv(\"GZCTF_FLAG\"); ?>" > /var/www/html/flag.php' >> /entrypoint.sh && \
+    echo 'exec apache2-foreground' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
