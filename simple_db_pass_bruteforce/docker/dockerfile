@@ -1,0 +1,17 @@
+FROM php:8.2-apache
+
+# 安装必要工具
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制项目文件到Web根目录
+COPY . /var/www/html/
+
+# 赋予启动脚本执行权限
+RUN chmod +x /var/www/html/start.sh
+
+# 暴露80端口
+EXPOSE 80
+
+# 容器启动命令
+CMD ["/var/www/html/start.sh"]
