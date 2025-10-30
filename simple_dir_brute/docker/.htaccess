@@ -1,0 +1,21 @@
+RewriteEngine On
+
+# 禁止访问敏感文件，但允许index.php
+<FilesMatch "(flag_dir\.txt|generate_flag_dir\.php|\.htaccess)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 允许index.php被访问（避免被误拦截）
+<Files "index.php">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# 目录访问转发到index.php（数字/数字/格式）
+RewriteRule ^(\d+)/(\d+)/?$ index.php?d1=$1&d2=$2 [L]
+
+# 其他路径跳转到错误页面（除了错误页面本身和index.php）
+RewriteCond %{REQUEST_URI} !^/0/0/not-here\.txt$
+RewriteCond %{REQUEST_URI} !^/index\.php$
+RewriteRule .* /0/0/not-here.txt [R=302,L]
