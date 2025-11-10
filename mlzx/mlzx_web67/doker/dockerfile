@@ -8,7 +8,7 @@ RUN echo "<Directory /var/www/html>" > /etc/apache2/conf-available/security.conf
     a2enconf security && \
     a2enmod rewrite
 
-RUN echo "disable_functions = show_source,print_r" > /usr/local/etc/php/conf.d/custom-php.ini && \
+RUN echo "disable_functions = show_source,print_r,system,exec,shell_exec,passthru" > /usr/local/etc/php/conf.d/custom-php.ini && \
     echo "auto_prepend_file = /var/www/html/filter.php" >> /usr/local/etc/php/conf.d/custom-php.ini
 
 WORKDIR /var/www/html
