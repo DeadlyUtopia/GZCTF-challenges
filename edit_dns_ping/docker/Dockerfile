@@ -1,26 +1,35 @@
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 配置国内源
+# 国内源配置
 RUN echo "deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
 
-# 安装必要工具
+# 工具安装
 RUN apt update && apt install -y \
     openssh-server \
     iputils-ping \
     dnsutils \
-    vim \
-    && rm -rf /var/lib/apt/lists/*
+    strace \
+    vim && \
+    rm -rf /var/lib/apt/lists/*
 
-# 配置SSH（密码: root）
+# 核心配置
 RUN mkdir -p /var/run/sshd && \
-    sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && \
     sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
-    echo "root:root" | chpasswd
+    useradd -m -s /bin/bash ctf && \
+    echo "ctf:flag" | chpasswd && \
+    usermod -G "" ctf && \
+    echo "AllowUsers ctf" >> /etc/ssh/sshd_config && \
+    rm -f /etc/resolv.conf 2>/dev/null || true && \
+    touch /etc/resolv.conf && \
+    chown root:ctf /etc/resolv.conf && \
+    chmod 664 /etc/resolv.conf && \
+    chattr -i /etc/resolv.conf 2>/dev/null || true
 
-# 复制并配置初始化脚本
+# 复制脚本
 COPY init.sh /init.sh
 RUN chmod +x /init.sh
 
