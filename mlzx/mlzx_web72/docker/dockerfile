@@ -1,0 +1,32 @@
+FROM php:7.3.4-apache
+
+RUN a2enmod rewrite && \
+    echo "<Directory /var/www/html>" > /etc/apache2/conf-available/security.conf && \
+    echo "    Options -Indexes" >> /etc/apache2/conf-available/security.conf && \
+    echo "    RewriteEngine On" >> /etc/apache2/conf-available/security.conf && \
+    echo "    RewriteRule ^filter\.php$ - [R=404,L]" >> /etc/apache2/conf-available/security.conf && \
+    echo "</Directory>" >> /etc/apache2/conf-available/security.conf && \
+    a2enconf security
+
+RUN echo "open_basedir = /var/www/html/" > /usr/local/etc/php/conf.d/restrict.ini && \
+    echo "disable_functions = exec,shell_exec,passthru,proc_open,popen,system,file_get_contents,readfile,file,fopen,fread,fgets,show_source,print_r,var_dump" >> /usr/local/etc/php/conf.d/restrict.ini && \
+    echo "auto_prepend_file = /var/www/html/filter.php" >> /usr/local/etc/php/conf.d/restrict.ini
+
+WORKDIR /var/www/html
+COPY index.php .
+COPY filter.php .
+COPY flag.php .
+
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'if [ -z "$GZCTF_FLAG" ]; then echo "ERROR: GZCTF_FLAG environment variable not set"; exit 1; fi' >> /entrypoint.sh && \
+    echo 'echo "$GZCTF_FLAG" > /flag575038.txt' >> /entrypoint.sh && \
+    echo 'chmod 644 /flag575038.txt && chown www-data:www-data /flag575038.txt' >> /entrypoint.sh && \
+    echo 'exec apache2-foreground' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    chmod 644 /var/www/html/index.php
+
+EXPOSE 80
+CMD ["/entrypoint.sh"]
