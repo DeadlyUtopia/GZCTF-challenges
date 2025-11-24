@@ -1,0 +1,49 @@
+FROM php:7.4-apache
+
+# 启用必要模块
+RUN a2enmod headers rewrite
+
+# 创建目录并设置权限
+RUN mkdir -p /var/www/html/db && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html
+
+# 复制PHP首页到根目录
+COPY html/index.php /var/www/html/
+
+# 复制Apache配置并启用
+COPY apache-config/db.conf /etc/apache2/conf-available/
+RUN a2enconf db.conf
+
+# 编写脚本
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    # 检查FLAG环境变量
+    echo 'if [ -z "$GZCTF_FLAG" ]; then' >> /entrypoint.sh && \
+    echo '    echo "ERROR: GZCTF_FLAG is not set"' >&2 && \
+    echo '    exit 1' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    # 生成mdb文件
+    echo 'MDB_PATH="/var/www/html/db/db.mdb"' >> /entrypoint.sh && \
+    echo 'echo -ne "\x53\x74\x61\x6E\x64\x61\x72\x64\x20\x41\x63\x63\x65\x73\x73\x20" > $MDB_PATH' >> /entrypoint.sh && \
+    echo 'echo -ne "4\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> $MDB_PATH' >> /entrypoint.sh && \
+    echo 'echo -ne "FLAG: $GZCTF_FLAG" >> $MDB_PATH' >> /entrypoint.sh && \
+    echo 'for i in {1..50}; do echo -ne "\x00" >> $MDB_PATH; done' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    # 权限确认
+    echo 'chown -R www-data:www-data /var/www/html' >> /entrypoint.sh && \
+    echo 'chmod -R 644 /var/www/html/*' >> /entrypoint.sh && \
+    echo 'chmod 755 /var/www/html /var/www/html/db' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    # 启动Apache
+    echo 'exec /usr/sbin/apache2ctl -D FOREGROUND' >> /entrypoint.sh
+
+# 赋予脚本执行权限
+RUN chmod +x /entrypoint.sh
+
+# 暴露80端口
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]
