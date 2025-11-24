@@ -1,0 +1,21 @@
+FROM php:7.4-apache
+
+COPY index.php /var/www/html/
+COPY snake.js /var/www/html/
+COPY flag-template.php /opt/ctf/
+COPY entrypoint.sh /
+
+RUN mkdir -p /opt/ctf && \
+    chown -R www-data:www-data /opt/ctf && \
+    chmod -R 755 /opt/ctf && \
+    echo 'php_admin_value open_basedir "/var/www/html/:/opt/ctf/"' > /etc/apache2/conf-available/php-perm.conf && \
+    echo '<Directory /var/www/html/>' >> /etc/apache2/conf-available/default-index.conf && \
+    echo '    DirectoryIndex index.php index.html' >> /etc/apache2/conf-available/default-index.conf && \
+    echo '</Directory>' >> /etc/apache2/conf-available/default-index.conf && \
+    a2enconf default-index.conf && \
+    a2enconf php-perm.conf && \
+    chmod +x /entrypoint.sh && \
+    chmod -R 755 /var/www/html/
+
+EXPOSE 80
+CMD ["/entrypoint.sh"]
