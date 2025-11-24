@@ -1,0 +1,51 @@
+FROM php:7.4-apache
+
+RUN echo "deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security/ bullseye-security main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib" >> /etc/apt/sources.list && \
+    apt-get update && apt-get install -y sqlite3 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Apache配置+权限
+RUN a2enmod rewrite && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    mkdir -p /var/ctf/sqlite && \
+    chown -R www-data:www-data /var/ctf && \
+    chmod -R 755 /var/ctf
+
+# 复制文件
+COPY index.php /var/www/html/
+COPY backup.sql /var/www/
+COPY init.sql /var/ctf/
+COPY images/ /var/www/html/images/
+
+# 配置Apache允许访问/backup.sql
+RUN echo "Alias /backup.sql /var/www/backup.sql" >> /etc/apache2/apache2.conf && \
+    echo "<Directory /var/www/>" >> /etc/apache2/apache2.conf && \
+    echo "    Options +Indexes +FollowSymLinks" >> /etc/apache2/apache2.conf && \
+    echo "    AllowOverride All" >> /etc/apache2/apache2.conf && \
+    echo "    Require all granted" >> /etc/apache2/apache2.conf && \
+    echo "</Directory>" >> /etc/apache2/apache2.conf
+
+# 启动脚本：注入flag→初始化数据库→启动Apache
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo '' >> /start.sh && \
+    # 1. 注入flag到对外泄露的backup.sql
+    echo 'sed -i "s/{GZCTF_FLAG}/$GZCTF_FLAG/" /var/www/backup.sql' >> /start.sh && \
+    echo '' >> /start.sh && \
+    # 2. 注入flag到内部初始化脚本init.sql
+    echo 'sed -i "s/{GZCTF_FLAG}/$GZCTF_FLAG/" /var/ctf/init.sql' >> /start.sh && \
+    echo '' >> /start.sh && \
+    # 3. 用init.sql初始化SQLite数据库
+    echo 'sqlite3 /var/ctf/sqlite/ctf.db < /var/ctf/init.sql' >> /start.sh && \
+    echo '' >> /start.sh && \
+    # 4. 启动Apache
+    echo 'apache2-foreground' >> /start.sh
+
+# 启动脚本权限
+RUN chmod +x /start.sh
+
+EXPOSE 80
+CMD ["/start.sh"]
