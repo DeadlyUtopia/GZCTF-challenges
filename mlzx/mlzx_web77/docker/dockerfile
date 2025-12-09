@@ -1,0 +1,40 @@
+FROM php:7.4.9-fpm-alpine3.12
+
+# Install nginx only
+RUN apk add --no-cache nginx
+
+# Copy PHP configuration
+COPY php/php.ini /usr/local/etc/php/php.ini
+
+# Copy PHP FFI configuration
+COPY php/conf.d/ /usr/local/etc/php/conf.d/
+
+# Copy PHP-FPM pool configuration
+COPY php/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Copy nginx configuration
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+
+
+# Copy PHP files
+COPY php/ /var/www/html/
+
+# Create readflag shell helper: visible and executable, no direct output when run on TTY; only prints when stdout is redirected
+RUN cat <<'EOF' > /readflag && \
+chmod 755 /readflag
+#!/bin/sh
+if [ -t 1 ]; then
+    exit 0
+fi
+printf "%s\n" "${GZCTF_FLAG:-flag{Not_Found_Default_Value}}"
+EOF
+
+# Create startup script
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'php-fpm -D' >> /entrypoint.sh && \
+    echo 'nginx -g "daemon off;"' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+EXPOSE 80
+
+CMD ["/entrypoint.sh"]
