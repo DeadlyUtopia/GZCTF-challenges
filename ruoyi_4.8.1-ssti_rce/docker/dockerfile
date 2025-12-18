@@ -1,7 +1,5 @@
-# 基础镜像：debian bullseye-slim（兼容Kali环境）
 FROM debian:bullseye-slim
 
-# 环境变量（自定义MySQL密码/数据库名）
 ENV MYSQL_ROOT_PASSWORD=c07138ebe915fa51d5a365b33f5b4f9a \
     MYSQL_DATABASE=ry \
     JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
@@ -9,13 +7,11 @@ ENV MYSQL_ROOT_PASSWORD=c07138ebe915fa51d5a365b33f5b4f9a \
     LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive
 
-# 1. 更换国内APT源（解决包找不到问题）
 RUN echo "deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib" > /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/debian-security/ bullseye-security main" >> /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib" >> /etc/apt/sources.list && \
     apt-get update
 
-# 2. 安装所有依赖（JDK11+Maven+MySQL+supervisord）
 RUN apt-get install -y --no-install-recommends \
     openjdk-11-jdk \
     maven \
@@ -24,10 +20,8 @@ RUN apt-get install -y --no-install-recommends \
     unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 更新 JAVA_HOME 指向 JDK 11
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
-# 3. 配置MySQL（大小写不敏感+字符集+权限+低内存优化）
 RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld /var/lib/mysql \
     && mkdir -p /etc/mysql/conf.d \
     && echo "[mysqld]" > /etc/mysql/conf.d/ruoyi.cnf \
@@ -43,22 +37,17 @@ RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld /var/lib/my
     && echo "table_open_cache=64" >> /etc/mysql/conf.d/ruoyi.cnf \
     && echo "innodb_log_file_size=32M" >> /etc/mysql/conf.d/ruoyi.cnf
 
-# 4. 解压并打包RuoYi源码
 WORKDIR /app
 COPY RuoYi-v4.8.1.zip /app/
 RUN unzip -q RuoYi-v4.8.1.zip -d /app && rm -f RuoYi-v4.8.1.zip
-# 替换自定义配置
 COPY custom-config/application.yml /app/RuoYi-v4.8.1/ruoyi-admin/src/main/resources/
 COPY custom-config/application-druid.yml /app/RuoYi-v4.8.1/ruoyi-admin/src/main/resources/
 COPY custom-config/logback.xml /app/RuoYi-v4.8.1/ruoyi-admin/src/main/resources/
-# 打包RuoYi
 RUN cd /app/RuoYi-v4.8.1 && mvn clean package -DskipTests
 
-# 5. 配置supervisord
 RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 6. 初始化MySQL数据库脚本（适配MariaDB）
 RUN mkdir -p /docker-entrypoint-initdb.d && \
     echo '#!/bin/bash' > /docker-entrypoint-initdb.d/init.sh && \
     echo 'sleep 25' >> /docker-entrypoint-initdb.d/init.sh && \
@@ -77,7 +66,6 @@ RUN mkdir -p /docker-entrypoint-initdb.d && \
     echo 'touch /tmp/db-initialized' >> /docker-entrypoint-initdb.d/init.sh && \
     chmod +x /docker-entrypoint-initdb.d/init.sh
 
-# 7. 启动RuoYi脚本（等待数据库初始化完成后再启动）
 RUN echo '#!/bin/bash' > /app/start-ruoyi.sh && \
     echo '# 等待数据库初始化完成' >> /app/start-ruoyi.sh && \
     echo 'while [ ! -f /tmp/db-initialized ]; do' >> /app/start-ruoyi.sh && \
@@ -88,8 +76,6 @@ RUN echo '#!/bin/bash' > /app/start-ruoyi.sh && \
     echo 'exec java -Xms128m -Xmx384m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -jar /app/RuoYi-v4.8.1/ruoyi-admin/target/ruoyi-admin.jar' >> /app/start-ruoyi.sh && \
     chmod +x /app/start-ruoyi.sh
 
-# 暴露端口
 EXPOSE 80 3306 8080
-
 # 启动supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
