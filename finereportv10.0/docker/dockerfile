@@ -1,0 +1,31 @@
+FROM eclipse-temurin:8-jdk
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Limit JVM memory footprint to ~1.5GB (and under 2GB)
+ENV JAVA_OPTS="-Xms512m -Xmx1536m -XX:MaxMetaspaceSize=256m -XX:+UseG1GC"
+ENV CATALINA_OPTS="$JAVA_OPTS"
+
+WORKDIR /home/tools
+
+# 自动解压本地 FineReport/Tomcat 压缩包（无需网络）
+ADD tomcat-linux.tar.gz /home/tools/
+
+# 复制预配置的 finedb 文件夹（已配置管理员账户）
+ADD finedb /home/tools/tomcat-linux/webapps/webroot/WEB-INF/embed/finedb
+
+# 复制 JDK8 的 tools.jar 到 Tomcat 的 lib（若已存在则跳过）
+RUN if [ -f "/home/tools/tomcat-linux/lib/tools.jar" ]; then \
+			echo "tools.jar already present in Tomcat lib"; \
+		elif [ -f "$JAVA_HOME/lib/tools.jar" ]; then \
+			cp "$JAVA_HOME/lib/tools.jar" /home/tools/tomcat-linux/lib/; \
+		else \
+			echo "tools.jar not found under JAVA_HOME/lib, proceeding"; \
+		fi
+
+EXPOSE 8080
+
+WORKDIR /home/tools/tomcat-linux/bin
+
+CMD ["./catalina.sh","run"]
