@@ -9,10 +9,10 @@ ENV CATALINA_OPTS="$JAVA_OPTS"
 
 WORKDIR /home/tools
 
-# 自动解压本地 FineReport/Tomcat 压缩包（无需网络）
+# 自动解压本地 FineReport/Tomcat 压缩包
 ADD tomcat-linux.tar.gz /home/tools/
 
-# 复制预配置的 finedb 文件夹（已配置管理员账户）
+# 复制预配置的 finedb 文件夹
 ADD finedb /home/tools/tomcat-linux/webapps/webroot/WEB-INF/embed/finedb
 
 # 复制 JDK8 的 tools.jar 到 Tomcat 的 lib（若已存在则跳过）
