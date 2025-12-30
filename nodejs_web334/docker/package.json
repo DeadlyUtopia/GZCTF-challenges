@@ -1,0 +1,14 @@
+{
+  "name": "nodejs_web334",
+  "version": "1.0.0",
+  "description": "Simple login page that reveals GZCTF_FLAG after authentication.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "archiver": "^5.3.2",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  }
+}
