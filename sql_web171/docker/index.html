@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户查询系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .error {
+            background: #ffe0e0;
+            border-left: 4px solid #ff6b6b;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            color: #c92a2a;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        table thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #1565c0;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 用户查询系统</h1>
+        
+        <div class="info">
+            请输入用户ID进行查询
+        </div>
+        
+        <form id="searchForm" class="search-form">
+            <input type="text" id="searchInput" name="id" placeholder="请输入用户ID..." autocomplete="off">
+            <button type="submit">查询</button>
+        </form>
+        
+        <div id="resultContainer"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const searchInput = document.getElementById('searchInput');
+            const resultContainer = document.getElementById('resultContainer');
+            const id = searchInput.value.trim();
+            
+            if (!id) {
+                resultContainer.innerHTML = '<div class="error"><strong>❌ 错误</strong><br>请输入用户ID</div>';
+                return;
+            }
+            
+            // 显示加载状态
+            resultContainer.innerHTML = '<div class="loading">⏳ 正在查询...</div>';
+            
+            try {
+                // 调用API
+                const response = await fetch(`api.php?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    // 显示结果表格
+                    let html = '<div class="result"><table><thead><tr><th>ID</th><th>用户名</th><th>密码</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(row => {
+                        html += `<tr>
+                            <td>${escapeHtml(row.id)}</td>
+                            <td>${escapeHtml(row.username)}</td>
+                            <td>${escapeHtml(row.password)}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    resultContainer.innerHTML = html;
+                } else if (data.error) {
+                    // 显示错误
+                    resultContainer.innerHTML = `<div class="error"><strong>❌ 错误</strong><br>${escapeHtml(data.error)}</div>`;
+                } else {
+                    resultContainer.innerHTML = '<div class="error"><strong>❌ 错误</strong><br>未知错误</div>';
+                }
+            } catch (error) {
+                resultContainer.innerHTML = `<div class="error"><strong>❌ 错误</strong><br>请求失败: ${escapeHtml(error.message)}</div>`;
+            }
+        });
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
