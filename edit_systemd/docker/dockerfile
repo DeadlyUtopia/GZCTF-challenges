@@ -1,0 +1,42 @@
+FROM debian:bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_LISTCHANGES_FRONTEND=none
+ENV DEBCONF_NOWARNINGS=yes
+
+RUN rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/* && \
+    echo "deb http://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib" > /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security/ bookworm-security main non-free non-free-firmware contrib" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian-security/ bookworm-security main non-free non-free-firmware contrib" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib" >> /etc/apt/sources.list && \
+    apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 && \
+    apt-get install -y -qq --no-install-recommends \
+    openssh-server \
+    systemd \
+    sudo \
+    vim && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+
+RUN mkdir -p /run/sshd && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    useradd -m -s /bin/bash ctfuser && \
+    echo "ctfuser:ctfuser" | chpasswd && \
+    mkdir -p /usr/local/bin /usr/local/lib
+
+COPY systemctl /usr/local/bin/systemctl
+COPY flag.sh /usr/local/lib/flag.sh
+COPY entrypoint.sh /entrypoint.sh
+COPY flag.service /root/flag.service
+
+RUN chmod 755 /usr/local/bin/systemctl /entrypoint.sh && \
+    chmod 700 /usr/local/lib/flag.sh && \
+    chown root:root /usr/local/bin/systemctl /usr/local/lib/flag.sh && \
+    echo 'ctfuser ALL=(root) NOPASSWD: /bin/cp, /bin/chmod, /usr/local/lib/flag.sh, /usr/bin/systemd-analyze' > /etc/sudoers.d/ctfuser && \
+    chmod 440 /etc/sudoers.d/ctfuser
+
+EXPOSE 22
+CMD ["/entrypoint.sh"]

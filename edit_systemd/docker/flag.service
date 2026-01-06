@@ -1,0 +1,10 @@
+[Unit]
+Description=Flag Verify Service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/lib/flag.sh
+
+[Install]
+WantedBy=multi-user.target

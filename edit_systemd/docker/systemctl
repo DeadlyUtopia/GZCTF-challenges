@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+
+if [ "$1" != "start" ] || [ "$2" != "flag.service" ]; then
+    echo "System has not been booted with systemd."
+    exit 1
+fi
+
+USER_UNIT="/home/ctfuser/flag.service"
+REAL_UNIT="/etc/systemd/system/flag.service"
+
+[ -f "$USER_UNIT" ] || { echo "Unit file not found"; exit 1; }
+CHECK_TOOL=$(command -v systemd-analyze || true)
+[ -x "$CHECK_TOOL" ] || { echo "systemd-analyze not available"; exit 1; }
+
+VERIFY_LOG=$(mktemp)
+trap 'rm -f "$VERIFY_LOG"' EXIT
+
+if ! sudo "$CHECK_TOOL" verify "$USER_UNIT" >"$VERIFY_LOG" 2>&1; then
+    cat "$VERIFY_LOG"
+    exit 1
+fi
+
+if [ -s "$VERIFY_LOG" ]; then
+    cat "$VERIFY_LOG"
+    exit 1
+fi
+
+grep -qx '\[Unit\]' "$USER_UNIT" || exit 1
+grep -qx '\[Service\]' "$USER_UNIT" || exit 1
+grep -qx 'User=root' "$USER_UNIT" || exit 1
+EXEC_LINE=$(grep -E '^ExecStart=' "$USER_UNIT" | head -n1 || true)
+[ -n "$EXEC_LINE" ] || { echo "ExecStart missing"; exit 1; }
+EXEC_CMD=$(printf '%s' "$EXEC_LINE" | sed -E 's/^ExecStart=\s*//; s/^"//; s/".*$//; s/\s.*$//')
+[ "$EXEC_CMD" = "/usr/local/lib/flag.sh" ] || { echo "ExecStart must point to /usr/local/lib/flag.sh"; exit 1; }
+
+sudo cp "$USER_UNIT" "$REAL_UNIT"
+sudo chmod 644 "$REAL_UNIT"
+
+exec sudo /usr/local/lib/flag.sh
